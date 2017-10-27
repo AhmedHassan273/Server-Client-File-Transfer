@@ -22,7 +22,7 @@ namespace networkingTask1
                 Socket client = server.Accept();
                 Console.WriteLine(">>> Client Accepted");
                 FileStream file = File.Open(args[0], FileMode.Open, FileAccess.Read, FileShare.None);
-                Console.WriteLine("{0}\n{1}\n{2}\n", args[0], args[1], args[2]);
+                Console.WriteLine("{0}\n{1}\n{2}\n{3}\n", args[0], args[1], args[2], args[3]);
 
                 byte[] fileData = new byte[file.Length];
                 file.Read(fileData, 0, fileData.Length);
