@@ -17,34 +17,37 @@ namespace networkingTask1
                 IPEndPoint ep = new IPEndPoint(host, port);
                 Socket server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 server.Bind(ep);
-                while (true)
-                {
-                    server.Listen(100);
-                    Socket client = server.Accept();
-                    FileStream file = File.Open(args[0], FileMode.Open, FileAccess.Read, FileShare.None);
-                    Console.WriteLine("{0}\n{1}\n{2}\n", args[0], args[1], args[2]);
-                    byte[] fileData = new byte[file.Length];
-                    string message = "";
-                    file.Read(fileData, 0, fileData.Length);
-                    message = args[0].Length.ToString() + args[0];
-                    byte[] messageHeader = Encoding.ASCII.GetBytes(message);
-                    byte[] finalMessage = new byte[4 + args[0].Length + file.Length];
-                    int currentIndex = 0;
+                server.Listen(100);
+                Console.WriteLine(">>> Listening at IP:{0} , Port:{1}", host, port);
+                Socket client = server.Accept();
+                Console.WriteLine(">>> Client Accepted");
+                FileStream file = File.Open(args[0], FileMode.Open, FileAccess.Read, FileShare.None);
+                Console.WriteLine("{0}\n{1}\n{2}\n", args[0], args[1], args[2]);
 
-                    for (int i = 0; i < messageHeader.Length; i++)
-                    {
-                        finalMessage[currentIndex++] = messageHeader[i];
-                    }
+                byte[] fileData = new byte[file.Length];
+                file.Read(fileData, 0, fileData.Length);
 
-                    for (int i = 0; i < fileData.Length; i++)
-                    {
-                        finalMessage[currentIndex++] = fileData[i];
-                    }
-                    client.Send(finalMessage);
-                    Console.WriteLine(">>> File is sent successfully.");
-                    client.Shutdown(SocketShutdown.Both);
-                    client.Close();
-                }
+                Int32 len = args[0].Length;
+                byte[] fileNameLen = new byte[4];
+                fileNameLen = BitConverter.GetBytes(len);
+
+                byte[] fileNameInBytes = Encoding.ASCII.GetBytes(args[0]);
+
+                byte[] finalMessage = new byte[4 + len + file.Length + 1];
+
+                fileNameLen.CopyTo(finalMessage, 0);
+                fileNameInBytes.CopyTo(finalMessage, 4);
+                fileData.CopyTo(finalMessage, 4 + len - 1);
+
+                Console.WriteLine(">>> Sending File: {0}", args[0]);
+
+                client.Send(finalMessage);
+
+                Console.WriteLine(">>> File Sent");
+                    
+                client.Shutdown(SocketShutdown.Both);
+                client.Close();
+                file.Close();
             }
             catch (Exception e)
             {
