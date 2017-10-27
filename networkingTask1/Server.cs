@@ -47,7 +47,6 @@ namespace networkingTask1
                     
                 client.Shutdown(SocketShutdown.Both);
                 client.Close();
-                file.Close();
             }
             catch (Exception e)
             {
